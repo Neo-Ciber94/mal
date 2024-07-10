@@ -112,6 +112,7 @@ async function handleAuth(event: RequestEvent, options: HandleAuthOptions) {
         sameSite: "lax",
         secure: dev === false,
         maxAge: sessionDurationSeconds,
+        domain: options.domain,
       });
 
       event.cookies.set(COOKIE_AUTH_CODE_CHALLENGE, codeChallenge, {
@@ -120,6 +121,7 @@ async function handleAuth(event: RequestEvent, options: HandleAuthOptions) {
         sameSite: "lax",
         secure: dev === false,
         maxAge: 60 * 15, // 15min
+        domain: options.domain,
       });
 
       // sign-in callback
@@ -128,10 +130,10 @@ async function handleAuth(event: RequestEvent, options: HandleAuthOptions) {
       throw redirect(307, authenticationUrl);
     }
     case "/sign-out": {
-      event.cookies.delete(COOKIE_AUTH_SESSION, { path: "/" });
-      event.cookies.delete(COOKIE_AUTH_CODE_CHALLENGE, { path: "/" });
-      event.cookies.delete(COOKIE_AUTH_ACCESS_TOKEN, { path: "/" });
-      event.cookies.delete(COOKIE_AUTH_CSRF, { path: "/" });
+      event.cookies.delete(COOKIE_AUTH_SESSION, { path: "/", domain: options.domain });
+      event.cookies.delete(COOKIE_AUTH_CODE_CHALLENGE, { path: "/", domain: options.domain });
+      event.cookies.delete(COOKIE_AUTH_ACCESS_TOKEN, { path: "/", domain: options.domain });
+      event.cookies.delete(COOKIE_AUTH_CSRF, { path: "/", domain: options.domain });
 
       // sign-out callback
       options.callbacks?.onSignOut?.(event);
@@ -179,6 +181,7 @@ async function handleAuth(event: RequestEvent, options: HandleAuthOptions) {
         secure: dev === false,
         sameSite: "lax",
         maxAge: sessionDurationSeconds,
+        domain: options.domain,
       });
 
       const { access_token: accessToken, expires_in } = await Auth.refreshToken({ refreshToken: tokens.refresh_token });
@@ -189,10 +192,11 @@ async function handleAuth(event: RequestEvent, options: HandleAuthOptions) {
         secure: dev === false,
         sameSite: "lax",
         maxAge: expires_in,
+        domain: options.domain,
       });
 
       // remove the auth code challenge cookie
-      event.cookies.delete(COOKIE_AUTH_CODE_CHALLENGE);
+      event.cookies.delete(COOKIE_AUTH_CODE_CHALLENGE, { domain: options.domain });
 
       // auth callback
       options.callbacks?.onCallback?.(event);
@@ -222,6 +226,7 @@ async function handleAuth(event: RequestEvent, options: HandleAuthOptions) {
         maxAge: sessionDurationSeconds,
         httpOnly: true,
         sameSite: "strict",
+        domain: options.domain,
       });
 
       // session callback

@@ -79,6 +79,11 @@ export interface MyAnimeListHandlerOptions {
    * Callbacks.
    */
   callbacks?: AuthCallbacks;
+
+  /**
+   * Set the domain for the session cookie.
+   */
+  domain?: string;
 }
 
 export type HandleAuthOptions = MyAnimeListHandlerOptions & {
